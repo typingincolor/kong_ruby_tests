@@ -33,4 +33,16 @@ describe('rideways-api') do
     response = get_without_authorisation_header d
     expect(response.code).to eq(401)
   end
+
+  it('should return OK for a POST if the signature and date are correct') do
+    payload = {:message => "a message"}.to_json
+
+    content_sha256 = sha256(payload);
+
+    d = Time.now.httpdate
+    signature = hmac_sha1("date: #{d}\nx-content-sha256: #{content_sha256}")
+
+    response = post "date x-content-sha256", d, signature, payload, content_sha256
+    expect(response.code).to eq(200)
+  end
 end
